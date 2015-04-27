@@ -1,7 +1,13 @@
 <?php
 session_start();
-$_SESSION["dogsid"] = $_GET["id"];
+
+$dogsid = $_GET["id"];
+if(!isset($_GET["id"])) $dogsid = $_SESSION["dogsid"];
+$_SESSION["dogsid"] = $dogsid;
 $dogsid = $_SESSION["dogsid"];
+
+//$_SESSION["dogsid"] = $_GET["id"];
+//$dogsid = $_SESSION["dogsid"];
 /**
  * Purpose: This file will;
  *          upload a file, saving it to the mysql db
@@ -28,12 +34,16 @@ define("dbname","CIS355esshoff");
 define("tableName","gpc_upload");
 
 //check if the form should show or an upload attempted
+
+
 if(isset($_POST['upload']) && $_FILES['userfile']['size']>0)
 {
-	uploadFile();
+	
+	uploadFile($dogsid);
 }
 else
 {
+	
 	printForm();
 }
 
@@ -42,14 +52,14 @@ else
  * Pre:     a file to upload has been selected with the form.
  * Post:    file has been downloaded
  */
-function uploadFile()
+function uploadFile($dogsid)
 {
 	//get filename attributes
 	$fileName = $_FILES['userfile']['name'];
 	$tmpName  = $_FILES['userfile']['tmp_name'];
 	$fileSize = $_FILES['userfile']['size'];
 	$fileType = $_FILES['userfile']['type'];
-	$id = $_GET['id'];
+	//$id = $_GET['id'];
 	//make sure that internal quotes are escaped.
 	$fileType=(get_magic_quotes_gpc()==0 ? mysql_real_escape_string(
 	
@@ -69,15 +79,20 @@ function uploadFile()
 	//close the file
 	fclose($fp);
 	// if there were any escape chars needed add slashes
+		
 	if(!get_magic_quotes_gpc())
 	{
 		$fileName = addslashes($fileName);
 	}
+		
 	//connect to mysql
 	$con = mysql_connect(hostname, username, password) or die(mysql_error());
+	
 	//select the db
 	$db = mysql_select_db(dbname, $con);
+
 	if($db){
+		
 		//the query to execute on the DB
 		$query = "INSERT INTO ".tableName." (name, size, type, content, dogsid) ".
 			"VALUES ('$fileName', '$fileSize', '$fileType', '$content', '$dogsid')";
@@ -100,13 +115,14 @@ function uploadFile()
  */
 function printForm()
 {
+	
 	echo "<html>
 <body>
 <form method='post' enctype='multipart/form-data'>
 <table width='350' border='0' cellpadding='1'
 cellspacing='1' class='box'>
 <tr>
-<td>please select a file</td></tr>
+<td>Please select a file. Please ensure file is under 1MB.</td></tr>
 <tr>
 <td>
 <input type='hidden' name='MAX_FILE_SIZE'

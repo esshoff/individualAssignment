@@ -1,6 +1,11 @@
 <?php
 session_start();
-$_SESSION["dogsid"] = $_GET["id"];
+
+$dogsid = $_GET["id"];
+if(!isset($_GET["id"])) $dogsid = $_SESSION["dogsid"];
+$_SESSION["dogsid"] = $dogsid;
+					
+//$_SESSION["dogsid"] = $_GET["id"];
 /**
  * Purpose: This file will;
  *          download an image that has been saved to the mysql table
@@ -28,12 +33,12 @@ define("tableName","gpc_upload");
 
 if(isset($_GET["id"]))
 {
-	downloadFile();
+	downloadFile($dogsid);
 	//listImages();
 }
 else
 {
-	listImages();
+	listImages($dogsid);
 }
 
 
@@ -42,7 +47,7 @@ else
  * Pre:     an image to download has been selected.
  * Post:    file has been downloaded.
  */
-function downloadFile()
+function downloadFile($dogsid)
 {
 	//connect to mysql
 	mysql_connect(hostname,username,password); 
@@ -75,16 +80,17 @@ function downloadFile()
  * Pre:     none
  * Post:    images have been listed.
  */
-function listImages()
+function listImages($dogsid)
 {
 	echo "Select an image to display below.<br>";
+	
 	//connect to the DB
 	$conn = new mysqli(hostname, username, password, dbname);
 	if ($conn->connect_error) {
 		die("Connection failed: " . $conn->connect_error);
 	}
 	//the query to execute
-	$query = "SELECT id, name, size FROM ".tableName . "WHERE dogsid =".$_SESSION["dogsid"].""; 
+	$query = "SELECT id, name, size FROM ".tableName . "WHERE dogsid =". $dogsid .""; 
 	//execute the query
 	$result = $conn->query($query); 
 	//read each row of data returned
